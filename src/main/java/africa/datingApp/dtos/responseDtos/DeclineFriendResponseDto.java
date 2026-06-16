@@ -11,15 +11,12 @@ import java.time.LocalDateTime;
 public class DeclineFriendResponseDto {
     private String requestId;
     private String seekerId;
-    private String seekerUserName;
     private String seekerProfilePhotoUrl;
 
     private String friendId;
-    private String friendUserName;
     private FriendRequestStatus status;
+    private String message;
     private LocalDateTime createdDate;
     private LocalDateTime respondTime;
-
-
 
 }

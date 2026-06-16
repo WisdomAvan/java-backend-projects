@@ -2,6 +2,7 @@ package africa.datingApp.services;
 
 import africa.datingApp.data.enums.FriendRequestStatus;
 import africa.datingApp.data.models.FriendRequest;
+import africa.datingApp.data.models.Seeker;
 import africa.datingApp.data.repositories.FriendRequestRepository;
 import africa.datingApp.data.repositories.SeekerRepository;
 import africa.datingApp.dtos.requestDtos.AcceptRequestRequestDto;
@@ -10,13 +11,12 @@ import africa.datingApp.dtos.requestDtos.SendFriendRequestRequestDto;
 import africa.datingApp.dtos.responseDtos.AcceptFriendResponseDto;
 import africa.datingApp.dtos.responseDtos.DeclineFriendResponseDto;
 import africa.datingApp.dtos.responseDtos.SendFriendRequestResponseDto;
-import africa.datingApp.exceptions.CannotSendRequestToSelfException;
-import africa.datingApp.exceptions.UserNotFoundException;
-import africa.datingApp.exceptions.UserNotLoggedInException;
+import africa.datingApp.exceptions.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,16 +42,17 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         seekerRepository.findById(requestDto.getFriendId())
                 .orElseThrow(() -> new UserNotFoundException("Friend does not exist"));
 
-        FriendRequest request = new FriendRequest();
-        request.setSeekerId(requestDto.getSeekerId());
-        request.setFriendId(requestDto.getFriendId());
-        request.setMessage(requestDto.getMessage());
-        request.setCreatedTime(LocalDateTime.now());
-        request.setStatus(FriendRequestStatus.PENDING);
+        FriendRequest friendRequest = new FriendRequest();
+        friendRequest.setSeekerId(requestDto.getSeekerId());
+        friendRequest.setFriendId(requestDto.getFriendId());
+        friendRequest.setMessage(requestDto.getMessage());
+        friendRequest.setCreatedTime(LocalDateTime.now());
+        friendRequest.setStatus(FriendRequestStatus.PENDING);
 
-        FriendRequest savedRequest = friendRequestRepository.save(request);
+        FriendRequest savedRequest = friendRequestRepository.save(friendRequest);
 
         SendFriendRequestResponseDto response = new SendFriendRequestResponseDto();
+        response.setRequestId(savedRequest.getRequestId());
         response.setSeekerId(requestDto.getSeekerId());
         response.setFriendId(requestDto.getFriendId());
         response.setMessage("Request Successful");
@@ -63,26 +64,67 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     @Override
     public AcceptFriendResponseDto acceptRequest(AcceptRequestRequestDto acceptRequest) {
 
-        FriendRequest request = new FriendRequest();
-        request.setSeekerId(acceptRequest.getSeekerId());
-        request.setFriendId(acceptRequest.getFriendId());
-        request.setMessage(acceptRequest.getMessage());
-        request.setCreatedTime(LocalDateTime.now());
-        request.setStatus(FriendRequestStatus.ACCEPTED);
-        FriendRequest savedRequest = friendRequestRepository.save(request);
+        FriendRequest friendRequest = friendRequestRepository.findById(acceptRequest.getRequestId())
+                .orElseThrow(() -> new FriendRequestNotFoundException("Friend request not found"));
+
+        friendRequest.setStatus(FriendRequestStatus.ACCEPTED);
+        friendRequestRepository.save(friendRequest);
+
+        Seeker seeker = seekerRepository.findById(friendRequest.getSeekerId())
+                .orElseThrow(() -> new UserNotFoundException("Seeker not found"));
+
+        Seeker friend = seekerRepository.findById(friendRequest.getFriendId())
+                .orElseThrow(() -> new UserNotFoundException("Friend not found"));
+
+        if (seeker.getFriends() == null) {
+            seeker.setFriends(new ArrayList<>());
+        }
+
+        if (friend.getFriends() == null) {
+            friend.setFriends(new ArrayList<>());
+        }
+
+        seeker.getFriends().add(friend.getSeekerId());
+        friend.getFriends().add(seeker.getSeekerId());
+
+        seekerRepository.save(seeker);
+        seekerRepository.save(friend);
 
         AcceptFriendResponseDto response = new AcceptFriendResponseDto();
-        response.setSeekerId(acceptRequest.getSeekerId());
-        response.setFriendId(acceptRequest.getFriendId());
+        response.setSeekerId(friendRequest.getSeekerId());
+        response.setFriendId(friendRequest.getFriendId());
         response.setMessage("Request Accepted");
-        response.setStatus(savedRequest.getStatus());
+        response.setStatus(friendRequest.getStatus());
 
         return response;
     }
 
     @Override
     public  DeclineFriendResponseDto declineRequest(DeclineFriendRequestDto declineRequestDto) {
-        return null;
+
+        FriendRequest friendRequest = friendRequestRepository.findById(declineRequestDto.getRequestId())
+                .orElseThrow(() -> new FriendRequestNotFoundException("Friend request not found"));
+
+        if (friendRequest.getStatus() == FriendRequestStatus.DECLINED) {
+            throw new FriendRequestAlreadyDeclinedException("Request Already Declined");
+        }
+
+        friendRequest.setStatus(FriendRequestStatus.DECLINED);
+            seekerRepository.findById(declineRequestDto.getFriendId())
+                    .orElseThrow(() -> new UserNotFoundException("Friend doesn't exist"));
+
+
+            friendRequestRepository.save(friendRequest);
+
+            DeclineFriendResponseDto response = new DeclineFriendResponseDto();
+            response.setRequestId(friendRequest.getRequestId());
+            response.setSeekerId(friendRequest.getSeekerId());
+            response.setFriendId(friendRequest.getFriendId());
+            response.setStatus(FriendRequestStatus.DECLINED);
+            response.setMessage("Request Declined");
+
+            return response;
+
     }
 
 

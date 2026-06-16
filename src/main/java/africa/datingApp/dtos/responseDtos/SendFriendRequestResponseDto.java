@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class SendFriendRequestResponseDto {
     private String seekerId;
     private String friendId;
+    private String requestId;
     private FriendRequestStatus status;
     private String message;
     private LocalDateTime createdTime;

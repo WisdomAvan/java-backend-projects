@@ -6,4 +6,5 @@ import lombok.Data;
 public class DeclineFriendRequestDto {
     private String requestId;
     private String friendId;
+
 }

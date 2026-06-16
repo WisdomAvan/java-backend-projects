@@ -6,6 +6,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Document
@@ -27,6 +29,6 @@ public class Seeker {
     private LocalDate createdDate;
     private LocalDate lastSeen;
     private String message;
-
+    private List<String > friends =new ArrayList<>();
 
 }

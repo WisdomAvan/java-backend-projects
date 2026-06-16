@@ -63,7 +63,7 @@ public class FriendRequestMapper {
         DeclineFriendResponseDto declineRequest = new DeclineFriendResponseDto();
         declineRequest.setFriendId(request.getFriendId());
         declineRequest.setSeekerId(request.getSeekerId());
-        declineRequest.setStatus(FriendRequestStatus.DECLINE);
+        declineRequest.setStatus(FriendRequestStatus.DECLINED);
         declineRequest.setRespondTime(request.getRespondTime());
 
         return declineRequest;
