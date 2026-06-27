@@ -1,18 +1,18 @@
 package africa.datingApp.dtos.responseDtos;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
 public class SeekerRegistrationResponseDto {
     private String seekerId;
-    private String friendId;
     private String firstName;
     private String lastName;
-    private String phoneNumber;
     private String seekerEmail;
     private LocalDate createdAt;
     private String message;
-    private String active;
+    private boolean active = true;
 }

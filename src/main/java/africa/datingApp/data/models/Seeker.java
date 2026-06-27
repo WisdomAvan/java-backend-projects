@@ -24,7 +24,7 @@ public class Seeker {
     private String phoneNumber;
     private String password;
     private boolean verified;
-    private boolean active;
+    private boolean active =true;
     private boolean loggedIn;
     private LocalDate createdDate;
     private LocalDate lastSeen;

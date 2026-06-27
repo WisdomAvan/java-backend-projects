@@ -109,6 +109,10 @@ public class FriendRequestServiceImpl implements FriendRequestService {
             throw new FriendRequestAlreadyDeclinedException("Request Already Declined");
         }
 
+        if(friendRequest.getStatus() == FriendRequestStatus.ACCEPTED) {
+            throw new InvalidFriendRequestStateException("Request Already Accepted");
+        }
+
         friendRequest.setStatus(FriendRequestStatus.DECLINED);
             seekerRepository.findById(declineRequestDto.getFriendId())
                     .orElseThrow(() -> new UserNotFoundException("Friend doesn't exist"));

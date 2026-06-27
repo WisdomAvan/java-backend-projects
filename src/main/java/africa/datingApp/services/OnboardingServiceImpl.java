@@ -9,10 +9,13 @@ import africa.datingApp.dtos.responseDtos.SeekerLoginResponseDto;
 import africa.datingApp.dtos.responseDtos.SeekerLogoutResponseDto;
 import africa.datingApp.dtos.responseDtos.SeekerRegistrationResponseDto;
 import africa.datingApp.exceptions.*;
+import africa.datingApp.utils.LoginMapper;
+import africa.datingApp.utils.RegisterMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
 
+//import java.time.LocalDate;
+//import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class OnboardingServiceImpl implements OnboardingService {
@@ -22,30 +25,15 @@ public class OnboardingServiceImpl implements OnboardingService {
     @Override
     public SeekerRegistrationResponseDto register(SeekerRegistrationRequestDto registerForm) {
 
-        if (seekerRepository.existsByEmail(registerForm.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already exists");
-        }
-        if(seekerRepository.existsByPhoneNumber(registerForm.getPhoneNumber())){
-            throw new PhoneNumberAlreadyExistsException("Phone number already exist");
-        }
-
         Seeker seeker = new Seeker();
-        seeker.setFirstName(registerForm.getFirstName());
-        seeker.setLastName(registerForm.getLastName());
-        seeker.setPhoneNumber(registerForm.getPhoneNumber());
-        seeker.setEmail(registerForm.getEmail());
-        seeker.setPassword(registerForm.getPassword());
-
-        Seeker savedSeeker = seekerRepository.save(seeker);
+        RegisterMapper.map(registerForm, seeker);
+        seekerRepository.save(seeker);
         SeekerRegistrationResponseDto response = new SeekerRegistrationResponseDto();
-        response.setSeekerId(savedSeeker.getSeekerId());
-        response.setFirstName(savedSeeker.getFirstName());
-        response.setLastName(savedSeeker.getLastName());
-        response.setSeekerEmail(savedSeeker.getEmail());
-        response.setActive(String.valueOf(savedSeeker.isActive()));
+        RegisterMapper.map(response, seeker);
 
         return response;
     }
+
 
     @Override
     public SeekerLoginResponseDto login(SeekerLoginRequestDto loginDetails){
@@ -65,16 +53,15 @@ public class OnboardingServiceImpl implements OnboardingService {
         seekerRepository.save(seeker);
 
         SeekerLoginResponseDto response = new SeekerLoginResponseDto();
-        response.setSeekerId(seeker.getSeekerId());
-        response.setFirstName(seeker.getFirstName());
-        response.setLastName(seeker.getLastName());
-        response.setMessage("Login Successful");
+        LoginMapper.map(response, seeker);
 
         return response;
     }
+
+
     @Override
     public SeekerLogoutResponseDto logout(SeekerLogoutRequestDto logoutDetails){
-        Seeker seeker = (Seeker) seekerRepository.findByEmail(logoutDetails.getSeekerEmail()).orElseThrow(()-> new UserNotFoundException("Email not found"));
+        Seeker seeker = seekerRepository.findByEmail(logoutDetails.getSeekerEmail()).orElseThrow(()-> new UserNotFoundException("Email not found"));
 
         if(!seeker.isLoggedIn()){
             throw new AlreadyLoggedOutException("Already logged out");

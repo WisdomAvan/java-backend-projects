@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.data.util.Predicates.isTrue;
 
 @SpringBootTest
 class FriendRequestServiceImplTest {
@@ -418,7 +417,7 @@ class FriendRequestServiceImplTest {
 
         AcceptRequestRequestDto acceptRequestRequestDto = new AcceptRequestRequestDto();
         acceptRequestRequestDto.setRequestId("Does not exit requestId");
-        acceptRequestRequestDto.setFriendId(friendResponseDto.getFriendId());
+//        acceptRequestRequestDto.setFriendId(friendResponseDto.getFriendId());
 
         assertThrows(FriendRequestNotFoundException.class, () -> friendsRequestService.acceptRequest(acceptRequestRequestDto));
 
@@ -660,8 +659,188 @@ class FriendRequestServiceImplTest {
 
 
     }
+    @Test
+    void declineFriendRequest_whenRequestAlreadyAccepted_throwsException(){
 
+        SeekerRegistrationRequestDto seekerRegister = new SeekerRegistrationRequestDto();
+        seekerRegister.setFirstName("Timothy");
+        seekerRegister.setLastName("Goodness");
+        seekerRegister.setPhoneNumber("08016161214");
+        seekerRegister.setEmail("timothy@gmail.com");
+        seekerRegister.setPassword("00000000");
 
+        SeekerRegistrationResponseDto seekerResponseDto = onboardingService.register(seekerRegister);
+
+        SeekerRegistrationRequestDto friendRequestDto = new SeekerRegistrationRequestDto();
+        friendRequestDto.setFirstName("Chioma");
+        friendRequestDto.setLastName("Collins");
+        friendRequestDto.setPhoneNumber("08023232350");
+        friendRequestDto.setEmail("chioma@gmail.com");
+        friendRequestDto.setPassword("12345008");
+
+        SeekerRegistrationResponseDto friendResponseDto = onboardingService.register(friendRequestDto);
+
+        SeekerLoginRequestDto seekerLoginRequestDto = new SeekerLoginRequestDto("timothy@gmail.com", "00000000");
+        onboardingService.login(seekerLoginRequestDto);
+
+        SendFriendRequestRequestDto friendRequestRequestDto = new SendFriendRequestRequestDto();
+        friendRequestRequestDto.setLoggedIn(true);
+        friendRequestRequestDto.setSeekerId(seekerResponseDto.getSeekerId());
+        friendRequestRequestDto.setFriendId(friendResponseDto.getSeekerId());
+        friendRequestRequestDto.setMessage("Hello Chi, Let's connect");
+
+        SendFriendRequestResponseDto friendRequestResponseDto = friendsRequestService.sendFriendRequest(friendRequestRequestDto);
+        assertThat(friendRequestResponseDto.getStatus()).isEqualTo(FriendRequestStatus.PENDING);
+
+        AcceptRequestRequestDto acceptRequestRequestDto = new AcceptRequestRequestDto();
+
+        acceptRequestRequestDto.setFriendId(friendRequestResponseDto.getFriendId());
+        acceptRequestRequestDto.setRequestId(friendRequestResponseDto.getRequestId());
+        acceptRequestRequestDto.setMessage("Accepted");
+
+        AcceptFriendResponseDto acceptFriendResponse =friendsRequestService.acceptRequest(acceptRequestRequestDto);
+        assertThat(acceptFriendResponse.getStatus()).isEqualTo(FriendRequestStatus.ACCEPTED);
+
+        DeclineFriendRequestDto declineFriendRequestDto = new DeclineFriendRequestDto();
+
+        declineFriendRequestDto.setFriendId(friendRequestResponseDto.getFriendId());
+        declineFriendRequestDto.setRequestId(friendRequestResponseDto.getRequestId());
+
+        assertThrows(InvalidFriendRequestStateException.class,()->friendsRequestService.declineRequest(declineFriendRequestDto));
+    }
+
+    @Test
+    void givenValidDeclineRequest_WhenProcessed_ResponseShouldNotBeNull(){
+
+        SeekerRegistrationRequestDto seekerRegister = new SeekerRegistrationRequestDto();
+        seekerRegister.setFirstName("Timothy");
+        seekerRegister.setLastName("Goodness");
+        seekerRegister.setPhoneNumber("08016161214");
+        seekerRegister.setEmail("timothy@gmail.com");
+        seekerRegister.setPassword("00000000");
+
+        SeekerRegistrationResponseDto seekerResponseDto = onboardingService.register(seekerRegister);
+
+        SeekerRegistrationRequestDto friendRequestDto = new SeekerRegistrationRequestDto();
+        friendRequestDto.setFirstName("Chioma");
+        friendRequestDto.setLastName("Collins");
+        friendRequestDto.setPhoneNumber("08023232350");
+        friendRequestDto.setEmail("chioma@gmail.com");
+        friendRequestDto.setPassword("12345008");
+
+        SeekerRegistrationResponseDto friendResponseDto = onboardingService.register(friendRequestDto);
+
+        SeekerLoginRequestDto seekerLoginRequestDto = new SeekerLoginRequestDto("timothy@gmail.com", "00000000");
+        onboardingService.login(seekerLoginRequestDto);
+
+        SendFriendRequestRequestDto friendRequestRequestDto = new SendFriendRequestRequestDto();
+        friendRequestRequestDto.setLoggedIn(true);
+        friendRequestRequestDto.setSeekerId(seekerResponseDto.getSeekerId());
+        friendRequestRequestDto.setFriendId(friendResponseDto.getSeekerId());
+        friendRequestRequestDto.setMessage("Hello Chi, Let's connect");
+
+        SendFriendRequestResponseDto friendRequestResponseDto = friendsRequestService.sendFriendRequest(friendRequestRequestDto);
+        assertThat(friendRequestResponseDto.getStatus()).isEqualTo(FriendRequestStatus.PENDING);
+
+        DeclineFriendRequestDto declineFriendRequestDto = new DeclineFriendRequestDto();
+
+        declineFriendRequestDto.setFriendId(friendRequestResponseDto.getFriendId());
+        declineFriendRequestDto.setRequestId(friendRequestResponseDto.getRequestId());
+
+        assertNotNull(friendsRequestService.declineRequest(declineFriendRequestDto));
+    }
+
+    @Test
+    void givenValidDeclineRequest_WhenProcessed_ResponseShouldContainDeclinedStatus(){
+
+        SeekerRegistrationRequestDto seekerRegister = new SeekerRegistrationRequestDto();
+        seekerRegister.setFirstName("Timothy");
+        seekerRegister.setLastName("Goodness");
+        seekerRegister.setPhoneNumber("08016161214");
+        seekerRegister.setEmail("timothy@gmail.com");
+        seekerRegister.setPassword("00000000");
+
+        SeekerRegistrationResponseDto seekerResponseDto = onboardingService.register(seekerRegister);
+
+        SeekerRegistrationRequestDto friendRequestDto = new SeekerRegistrationRequestDto();
+        friendRequestDto.setFirstName("Chioma");
+        friendRequestDto.setLastName("Collins");
+        friendRequestDto.setPhoneNumber("08023232350");
+        friendRequestDto.setEmail("chioma@gmail.com");
+        friendRequestDto.setPassword("12345008");
+
+        SeekerRegistrationResponseDto friendResponseDto = onboardingService.register(friendRequestDto);
+
+        SeekerLoginRequestDto seekerLoginRequestDto = new SeekerLoginRequestDto("timothy@gmail.com", "00000000");
+        onboardingService.login(seekerLoginRequestDto);
+
+        SendFriendRequestRequestDto friendRequestRequestDto = new SendFriendRequestRequestDto();
+        friendRequestRequestDto.setLoggedIn(true);
+        friendRequestRequestDto.setSeekerId(seekerResponseDto.getSeekerId());
+        friendRequestRequestDto.setFriendId(friendResponseDto.getSeekerId());
+        friendRequestRequestDto.setMessage("Hello Chi, Let's connect");
+
+        SendFriendRequestResponseDto friendRequestResponseDto = friendsRequestService.sendFriendRequest(friendRequestRequestDto);
+        assertThat(friendRequestResponseDto.getStatus()).isEqualTo(FriendRequestStatus.PENDING);
+
+        DeclineFriendRequestDto declineFriendRequestDto = new DeclineFriendRequestDto();
+
+        declineFriendRequestDto.setFriendId(friendRequestResponseDto.getFriendId());
+        declineFriendRequestDto.setRequestId(friendRequestResponseDto.getRequestId());
+
+        DeclineFriendResponseDto declineResponseDto = friendsRequestService.declineRequest(declineFriendRequestDto);
+
+        assertThat(declineResponseDto.getStatus()).isEqualTo(FriendRequestStatus.DECLINED);
+    }
+
+    @Test
+    void givenValidDeclineRequest_WhenProcessed_ResponseShouldContainSuccessMessage(){
+
+        SeekerRegistrationRequestDto seekerRegister = new SeekerRegistrationRequestDto();
+        seekerRegister.setFirstName("Timothy");
+        seekerRegister.setLastName("Goodness");
+        seekerRegister.setPhoneNumber("08016161214");
+        seekerRegister.setEmail("timothy@gmail.com");
+        seekerRegister.setPassword("00000000");
+
+        SeekerRegistrationResponseDto seekerResponseDto = onboardingService.register(seekerRegister);
+
+        SeekerRegistrationRequestDto friendRequestDto = new SeekerRegistrationRequestDto();
+        friendRequestDto.setFirstName("Chioma");
+        friendRequestDto.setLastName("Collins");
+        friendRequestDto.setPhoneNumber("08023232350");
+        friendRequestDto.setEmail("chioma@gmail.com");
+        friendRequestDto.setPassword("12345008");
+
+        SeekerRegistrationResponseDto friendResponseDto = onboardingService.register(friendRequestDto);
+
+        SeekerLoginRequestDto seekerLoginRequestDto = new SeekerLoginRequestDto("timothy@gmail.com", "00000000");
+        onboardingService.login(seekerLoginRequestDto);
+
+        SendFriendRequestRequestDto friendRequestRequestDto = new SendFriendRequestRequestDto();
+        friendRequestRequestDto.setLoggedIn(true);
+        friendRequestRequestDto.setSeekerId(seekerResponseDto.getSeekerId());
+        friendRequestRequestDto.setFriendId(friendResponseDto.getSeekerId());
+        friendRequestRequestDto.setMessage("Hello Chi, Let's connect");
+
+        SendFriendRequestResponseDto friendRequestResponseDto = friendsRequestService.sendFriendRequest(friendRequestRequestDto);
+        assertThat(friendRequestResponseDto.getStatus()).isEqualTo(FriendRequestStatus.PENDING);
+
+        DeclineFriendRequestDto declineFriendRequestDto = new DeclineFriendRequestDto();
+
+        declineFriendRequestDto.setFriendId(friendRequestResponseDto.getFriendId());
+        declineFriendRequestDto.setRequestId(friendRequestResponseDto.getRequestId());
+
+        DeclineFriendResponseDto declineResponseDto = friendsRequestService.declineRequest(declineFriendRequestDto);
+
+        assertThat(declineResponseDto.getMessage()).isEqualTo("Request Declined");
+
+    }
+
+    @Test
+    void givenSeekerWithSentRequests_WhenViewingAllSentRequests_ItShouldReturnRequests(){
+        
+    }
 
 }
 

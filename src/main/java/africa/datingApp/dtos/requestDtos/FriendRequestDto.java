@@ -1,7 +1,11 @@
 package africa.datingApp.dtos.requestDtos;
 
 import africa.datingApp.data.enums.FriendRequestStatus;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
 public class FriendRequestDto {
     private String requestId;
     private String SeekerId;
