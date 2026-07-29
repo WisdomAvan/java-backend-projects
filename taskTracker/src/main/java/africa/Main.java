@@ -1,17 +1,44 @@
 package africa;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    static void main() {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        IO.println(String.format("Hello and welcome!"));
+import africa.wisdom.taskTracker.controllers.TaskController;
+import africa.wisdom.taskTracker.data.models.Task;
+import africa.wisdom.taskTracker.persistence.implementation.JsonTaskRepository;
+import africa.wisdom.taskTracker.persistence.repositories.TaskRepository;
+import africa.wisdom.taskTracker.services.TaskService;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            IO.println("i = " + i);
+public class Main {
+
+    public static void main(String[] args) {
+
+        TaskRepository repository = new JsonTaskRepository();
+        TaskService taskService = new TaskService(repository);
+        TaskController controller = new TaskController(taskService);
+
+        if (args.length == 0) {
+            System.out.println("Please enter a command.");
+            return;
+        }
+
+        String command = args[0];
+
+        if (command.equals("add")) {
+
+            String description = args[1];
+
+            Task task = controller.addTask(description);
+
+            System.out.println("Task added successfully. ID: " + task.getTaskId());
+        }
+
+        if (command.equals("update")) {
+
+            Long id = Long.parseLong(args[1]);
+
+            String description = args[2];
+
+            Task updatedTask = controller.updateTask(id, description);
+
+            System.out.println("Task updated successfully. ID: " + updatedTask.getTaskId());
         }
     }
 }
