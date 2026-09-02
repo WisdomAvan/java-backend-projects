@@ -31,9 +31,7 @@ public class GutenbergService {
                         uriBuilder.path("/api/books")
                                 .queryParam("page_size", 20);
 
-                        // Only add the "q" param when there's an actual search term.
-                        // Sending q="" to the external API returns zero results,
-                        // which was silently causing empty responses on getAllBooks().
+
                         if (query != null && !query.isBlank()) {
                             uriBuilder.queryParam("q", query);
                         }

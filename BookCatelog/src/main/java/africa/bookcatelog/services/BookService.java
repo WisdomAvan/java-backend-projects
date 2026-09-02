@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface BookService {
 
-    List<Book> getBooksByCategory(String category);
+    List<Book> getBooksByCategory(String category, String requestedBy);
 
-    List<Book> getBooksByAuthor(String authorName);
+    List<Book> getBooksByAuthor(String authorName,  String requestedBy);
 
     List<Book> getAllBooks();
 

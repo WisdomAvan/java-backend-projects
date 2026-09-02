@@ -18,19 +18,19 @@ public class BookController {
 
     @GetMapping("/category/{category}")
     public ResponseEntity<List<Book>> getBooksByCategory(
-            @PathVariable String category) {
+            @PathVariable String category, @RequestHeader("X-User") String requestedBy) {
 
         return ResponseEntity.ok(
-                bookService.getBooksByCategory(category)
+                bookService.getBooksByCategory(category ,  requestedBy)
         );
     }
 
     @GetMapping("/author/{authorName}")
     public ResponseEntity<List<Book>> getBooksByAuthor(
-            @PathVariable String authorName) {
+            @PathVariable String authorName , @RequestHeader("X-User") String requestedBy) {
 
         return ResponseEntity.ok(
-                bookService.getBooksByAuthor(authorName)
+                bookService.getBooksByAuthor(authorName ,   requestedBy)
         );
     }
 

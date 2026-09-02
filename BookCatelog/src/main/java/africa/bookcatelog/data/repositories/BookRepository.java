@@ -13,8 +13,8 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
     List<Book> findBySubjectsContainingIgnoreCase(String subject);
 
-    Optional<Book> findByGutenbergId(Long gutenbergId);
+    Optional<Book> findByGutenbergId(String  gutenbergId);
 
-    boolean existsByGutenbergId(Long gutenbergId);
+    boolean existsByGutenbergId(String gutenbergId);
 
 }

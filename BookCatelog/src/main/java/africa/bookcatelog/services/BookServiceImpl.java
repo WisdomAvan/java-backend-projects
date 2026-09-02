@@ -1,5 +1,6 @@
 package africa.bookcatelog.services;
 
+import africa.bookcatelog.data.enums.SearchType;
 import africa.bookcatelog.data.models.Book;
 import africa.bookcatelog.data.repositories.BookRepository;
 import africa.bookcatelog.dtos.responseDtos.GutenbergBookResponse;
@@ -19,9 +20,10 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final GutenbergService gutenbergService;
+    private final SearchLogService searchLogService;
 
     @Override
-    public List<Book> getBooksByCategory(String category) {
+    public List<Book> getBooksByCategory(String category,String requestedBy) {
 
         if (category == null || category.isBlank()) {
             throw new BookNotFoundException("Category cannot be empty");
@@ -32,22 +34,48 @@ public class BookServiceImpl implements BookService {
 
         if (!books.isEmpty()) {
             log.info("Found {} books locally for category: {}", books.size(), category);
+
+            searchLogService.searchLog(
+                    String.valueOf(SearchType.CATEGORY),
+                    category,
+                    requestedBy,
+                    true,
+                    books.size()
+            );
+
             return books;
         }
 
         log.info("No local books found for category '{}', syncing from Gutenberg", category);
         List<Book> externalBooks = syncBooks(category);
 
+
         if (externalBooks.isEmpty()) {
+
+            searchLogService.searchLog(
+                    String.valueOf(SearchType.CATEGORY),
+                    category,
+                    requestedBy,
+                    false,
+                    0
+            );
             log.warn("No books found externally for category: {}", category);
             throw new BookNotFoundException("No books found for category: " + category);
         }
+
+        searchLogService.searchLog(
+                String.valueOf(SearchType.CATEGORY),
+                category,
+                requestedBy,
+                true,
+                externalBooks.size()
+        );
 
         return externalBooks;
     }
 
     @Override
-    public List<Book> getBooksByAuthor(String authorName) {
+    public List<Book> getBooksByAuthor(String authorName, String  requestedBy) {
 
         if (authorName == null || authorName.isBlank()) {
             throw new BookNotFoundException("Author name cannot be empty");
@@ -58,6 +86,14 @@ public class BookServiceImpl implements BookService {
 
         if (!books.isEmpty()) {
             log.info("Found {} books locally for author: {}", books.size(), authorName);
+
+            searchLogService.searchLog(
+                    String.valueOf(SearchType.AUTHOR),
+                    authorName,
+                    requestedBy,
+                    true,
+                    books.size()
+            );
             return books;
         }
 
@@ -65,9 +101,25 @@ public class BookServiceImpl implements BookService {
         List<Book> externalBooks = syncBooks(authorName);
 
         if (externalBooks.isEmpty()) {
+
+            searchLogService.searchLog(
+                    String.valueOf(SearchType.AUTHOR),
+                    authorName,
+                    requestedBy,
+                    false,
+                    0
+            );
             log.warn("No books found externally for author: {}", authorName);
             throw new BookNotFoundException("No books found for author: " + authorName);
         }
+
+        searchLogService.searchLog(
+                String.valueOf(SearchType.AUTHOR),
+                authorName,
+                requestedBy,
+                true,
+                externalBooks.size()
+        );
 
         return externalBooks;
     }
