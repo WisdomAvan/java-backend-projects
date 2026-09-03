@@ -26,9 +26,10 @@ public class Address extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private AddressType addressType;
+
     private Boolean isDefault;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

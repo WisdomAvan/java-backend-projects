@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Profile {
+public class Profile extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -40,6 +40,8 @@ public class Profile {
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    private String storeName;
 
 
 }

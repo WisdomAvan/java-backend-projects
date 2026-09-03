@@ -10,6 +10,4 @@ public interface UserService {
     RegisterUserResponse registerUser(RegisterUserRequest userRequestDetails);
     LoginResponse loginUser(LoginRequest loginDetails);
 
-
-
 }
